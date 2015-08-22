@@ -1,3 +1,19 @@
+//    pipeline is a functional programming library for go
+//    Copyright (C) 2015 mparaiso <mparaiso@online.fr>
+
+//    This program is free software: you can redistribute it and/or modify
+//    it under the terms of the GNU General Public License as published by
+//    the Free Software Foundation, either version 3 of the License, or
+//    (at your option) any later version.
+
+//    This program is distributed in the hope that it will be useful,
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+//    GNU General Public License for more details.
+
+//    You should have received a copy of the GNU General Public License
+//    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 package pipeline_test
 
 import (
@@ -8,7 +24,58 @@ import (
 	"github.com/interactiv/pipeline"
 )
 
-type Val interface{}
+type Person struct {
+	Age  int
+	Name string
+}
+
+func TestIntersection(t *testing.T) {
+	e := expect.New(t)
+	var result []int
+	err := pipeline.In([]int{1, 2, 4}).Intersection([]int{3, 2, 1}, []int{2, 5, 6}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result)).ToEqual(fmt.Sprint([]int{2}))
+}
+
+func TestGroupBy(t *testing.T) {
+
+	e := expect.New(t)
+
+	var result map[int][]Person
+	err := pipeline.In([]Person{{12, "John"}, {12, "Jane"}, {20, "Joe"}}).
+		GroupBy(func(el interface{}, i int) interface{} {
+		return el.(Person).Age
+	}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(len(result)).ToEqual(2)
+	e.Expect(len(result[12])).ToEqual(2)
+	e.Expect(result[12][0].Age).ToEqual(12)
+
+	var result1 map[string][]map[string]string
+	err = pipeline.In([]map[string]string{
+		{"product": "trousers", "category": "clothes"},
+		{"product": "beer", "category": "drinks"},
+		{"product": "coat", "category": "clothes"},
+	}).
+		GroupBy(func(el interface{}, i int) interface{} {
+		return el.(map[string]string)["category"]
+	}).Out(&result1)
+	e.Expect(err).ToBeNil()
+	e.Expect(len(result1)).ToEqual(2)
+	e.Expect(len(result1["clothes"])).ToEqual(2)
+	e.Expect(len(result1["drinks"])).ToEqual(1)
+}
+
+func TestXor(t *testing.T) {
+	e := expect.New(t)
+	var result []int
+	err := pipeline.In([]int{1, 2}).Xor([]int{2, 3}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result)).ToEqual(fmt.Sprint([]int{1, 3}))
+	err = pipeline.In([]int{1, 2}).Xor([]int{2, 3}, []int{2, 4}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result)).ToEqual(fmt.Sprint([]int{1, 3, 2, 4}))
+}
 
 func TestMap(t *testing.T) {
 	e := expect.New(t)
@@ -20,6 +87,20 @@ func TestMap(t *testing.T) {
 	e.Expect(len(result)).ToEqual(3)
 	e.Expect(result[0]).ToEqual(2)
 
+	var result2 *[]int
+	err = pipeline.In(&[]int{1, 2, 3}).Out(&result2)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result2)).ToEqual(fmt.Sprint(&[]int{1, 2, 3}))
+
+	var result3 string
+	err = pipeline.In("foo").Out(&result3)
+	e.Expect(err).ToBeNil()
+	e.Expect(result3).ToBe("foo")
+
+	var result4 []string
+	err = pipeline.In([]int{1, 2, 3}).Out(&result4)
+	e.Expect(err).Not().ToBeNil()
+	t.Log(err)
 }
 
 func TestMapReduce(t *testing.T) {
@@ -103,6 +184,11 @@ func TestEvery(t *testing.T) {
 	}).Out(&result)
 	e.Expect(err).ToBeNil()
 	e.Expect(result).ToBeTrue()
+	err = pipeline.In([]int{2, 4, 5}).Every(func(element interface{}, index int) bool {
+		return element.(int)%2 == 0
+	}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(result).ToBeFalse()
 }
 
 func TestSome(t *testing.T) {
@@ -205,6 +291,14 @@ func TestSlice(t *testing.T) {
 	}
 }
 
+func TestUnion(t *testing.T) {
+	e := expect.New(t)
+	var res []int
+	err := pipeline.In([]int{1, 2}).Union([]int{2, 3}, []int{3, 4}).Out(&res)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(res)).ToEqual(fmt.Sprint([]int{1, 2, 3, 4}))
+}
+
 func TestSplice(t *testing.T) {
 	e := expect.New(t)
 	var result []int
@@ -250,11 +344,44 @@ func TestChunk(t *testing.T) {
 
 }
 
-func TestNotIterableError(t *testing.T) {
+func TestZip(t *testing.T) {
 	e := expect.New(t)
-	err := pipeline.NotIterable("foo")
-	_, ok := err.(pipeline.NotIterableError)
-	e.Expect(ok).ToBeTrue()
+	var result1 [][]interface{}
+	err := pipeline.In([]int{1, 2, 3}).Zip().Out(&result1)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result1)).ToEqual(fmt.Sprint([][]interface{}{{1}, {2}, {3}}))
+	err = pipeline.In([]int{1, 2, 3}).Zip([]string{"John", "Jane", "David"}).Out(&result1)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result1)).
+		ToEqual(fmt.Sprint([][]interface{}{{1, "John"}, {2, "Jane"}, {3, "David"}}))
+	err = pipeline.In([]string{"US", "FR"}).Zip([]string{"John", "Jane", "David"}, []bool{true}).Out(&result1)
+	e.Expect(fmt.Sprint(result1)).
+		ToEqual(fmt.Sprint([][]interface{}{{"US", "John", true}, {"FR", "Jane", nil}, {nil, "David", nil}}))
+}
+
+func TestCompact(t *testing.T) {
+	e := expect.New(t)
+	var result1 []interface{}
+	err := pipeline.In([]interface{}{1, nil, 2, 'a', nil}).Compact().Out(&result1)
+	e.Expect(err).ToBeNil()
+	e.Expect(fmt.Sprint(result1)).ToEqual(fmt.Sprint([]interface{}{1, 2, 'a'}))
+}
+
+func TestEqual(t *testing.T) {
+	e := expect.New(t)
+	var result bool
+	err := pipeline.In([]int{1, 2, 3}).Equals([]int{1, 2, 3}, []int{1, 2, 3}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(result).ToBeTrue()
+	err = pipeline.In([]int{1, 2, 3}).Equals([]int{1, 2, 3}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(result).ToBeTrue()
+	err = pipeline.In([]int{1, 2, 3}).Equals().Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(result).ToBeTrue()
+	err = pipeline.In([]int{1, 2, 3}).Equals([]int{1, 2}).Out(&result)
+	e.Expect(err).ToBeNil()
+	e.Expect(result).ToBeFalse()
 }
 
 func TestIndexOutOfBoundsError(t *testing.T) {
