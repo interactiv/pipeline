@@ -18,6 +18,7 @@ package pipeline
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 )
@@ -79,6 +80,16 @@ func (pipeline *Pipeline) Filter(predicate func(element interface{}, index int) 
 	return pipeline
 }
 
+func (pipeline *Pipeline) Flatten() *Pipeline {
+	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
+		if !IsIterable(pipeline.in) {
+			return nil, NotIterableError{pipeline.in}
+		}
+		return nil, nil
+	})
+	return pipeline
+}
+
 // Compact remove nil values from array
 func (pipeline *Pipeline) Compact() *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
@@ -125,9 +136,9 @@ func (pipeline *Pipeline) Concat(arrays ...interface{}) *Pipeline {
 // Zip creates an array of grouped elements,
 // the first of which contains the first elements of the given arrays,
 // the second of which contains the second elements of the given arrays, and so on.
-func (pipeline *Pipeline) Zip(arrays ...interface{}) *Pipeline {
+func (pipeline *Pipeline) Zip() *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
-		return Zip(append(append([]interface{}{}, pipeline.in), arrays...)...)
+		return Zip(pipeline.in)
 	})
 	return pipeline
 }
@@ -229,6 +240,14 @@ func (pipeline *Pipeline) Tail(start int) *Pipeline {
 	return pipeline
 }
 
+// ToMap takes a collection or a map and a callback, and returns a map[interface{}]interface{}
+func (pipeline *Pipeline) ToMap(callback func(value interface{}, key interface{}) (resultValue interface{}, resultKey interface{})) *Pipeline {
+	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
+		return ToMap(pipeline.in, callback)
+	})
+	return pipeline
+}
+
 // Slice returns a slice of an array
 func (pipeline *Pipeline) Slice(start int, end int) *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
@@ -302,13 +321,18 @@ func (pipeline *Pipeline) Out(output interface{}) error {
 		pipeline.in = current
 
 	}
+	// first try
+	if canAssignTo(pipeline.in, output) {
+		valueOf(output).Elem().Set(valueOf(pipeline.in))
+		return nil
+	}
 	// if in and out are maps let's try to match them
 	if isMap(pipeline.in) && isMap(output) {
 		maP := makeMapFrom(output)
 		candidate := valueOf(pipeline.in)
 		for _, key := range candidate.MapKeys() {
-			if canAssignTo(candidate.MapIndex(key), maP.Type().Elem()) {
-				maP.SetMapIndex(key.Elem(), candidate.MapIndex(key))
+			if (candidate.MapIndex(key).Kind() == reflect.Ptr || candidate.MapIndex(key).Kind() == reflect.Interface) && canAssignTo(candidate.MapIndex(key).Elem(), maP) {
+				maP.SetMapIndex(key.Elem(), candidate.MapIndex(key).Elem())
 			} else if isSlice(candidate.MapIndex(key).Interface()) {
 				val, err := convertSliceOfInterfaceToTypedSlice(candidate.MapIndex(key).Interface(), maP.Type().Elem())
 				if err != nil {
@@ -342,6 +366,16 @@ func (pipeline *Pipeline) Out(output interface{}) error {
 	return nil
 }
 
+// MustOut panics on error or returns the result of the pipeline
+func (pipeline *Pipeline) MustOut() interface{} {
+	var res interface{}
+	err := pipeline.Out(&res)
+	if err != nil {
+		panic(err)
+	}
+	return res
+}
+
 // Equals returns true if all arrays are of equal length and Equal content
 func (pipeline *Pipeline) Equals(arrays ...interface{}) *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
@@ -368,7 +402,7 @@ func Must(value interface{}, err error) interface{} {
 func IsIterable(value interface{}) bool {
 	arrayValue := reflect.ValueOf(value)
 	switch arrayValue.Kind() {
-	case reflect.Array, reflect.Slice, reflect.String:
+	case reflect.Array, reflect.Slice, reflect.String, reflect.Map:
 		return true
 	default:
 		switch value.(type) {
@@ -774,18 +808,22 @@ func Xor(arrays ...interface{}) (interface{}, error) {
 // Zip Creates an array of grouped elements,
 // the first of which contains the first elements of the given arrays,
 // the second of which contains the second elements of the given arrays, and so on.
-func Zip(arrays ...interface{}) (interface{}, error) {
-	if len(arrays) == 0 {
+func Zip(arrayS interface{}) (interface{}, error) {
+	if !IsIterable(arrayS) {
+		return nil, NotIterableError{arrayS}
+	}
+	arrays := NewIterable(arrayS)
+	if arrays.Length() == 0 {
 		return []interface{}{}, nil
 	}
-	for _, array := range arrays {
-		if !IsIterable(array) {
-			return nil, NotIterableError{array}
+	for i := 0; i < arrays.Length(); i++ {
+		if !IsIterable(arrays.At(i)) {
+			return nil, NotIterableError{arrays.At(i)}
 		}
 	}
-	if len(arrays) == 1 {
+	if arrays.Length() == 1 {
 		result := [][]interface{}{}
-		iterable := NewIterable(arrays[0])
+		iterable := NewIterable(arrays.At(0))
 		for i := 0; i < iterable.Length(); i++ {
 			result = append(result, []interface{}{})
 			result[i] = append(result[i], iterable.At(i))
@@ -796,8 +834,8 @@ func Zip(arrays ...interface{}) (interface{}, error) {
 
 	maxLength := func() int {
 		l := 0
-		for _, array := range arrays {
-			iterable := NewIterable(array)
+		for i := 0; i < arrays.Length(); i++ {
+			iterable := NewIterable(arrays.At(i))
 			if iterable.Length() > l {
 				l = iterable.Length()
 			}
@@ -808,8 +846,8 @@ func Zip(arrays ...interface{}) (interface{}, error) {
 		result = append(result, []interface{}{})
 	}
 	for i := 0; i < maxLength; i++ {
-		for _, array := range arrays {
-			iterable := NewIterable(array)
+		for j := 0; j < arrays.Length(); j++ {
+			iterable := NewIterable(arrays.At(j))
 			if i < iterable.Length() {
 				result[i] = append(result[i], iterable.At(i))
 			} else {
@@ -906,6 +944,32 @@ func GroupBy(collection interface{}, iteratee func(interface{}, int) interface{}
 	return result, nil
 }
 
+// ToMap takes a collection or a map and a callback, and returns a map[interface{}]interface{}
+func ToMap(mapOrSlice interface{}, mapper func(value interface{}, key interface{}) (valueResult interface{}, keyResult interface{})) (interface{}, error) {
+	if !IsIterable(mapOrSlice) {
+		return nil, NotIterableError{mapOrSlice}
+	}
+	m := map[interface{}]interface{}{}
+	if !isMap(mapOrSlice) {
+		iterable := NewIterable(mapOrSlice)
+		for i := 0; i < iterable.Length(); i++ {
+			m[i] = iterable.At(i)
+		}
+	} else {
+		v := reflect.ValueOf(mapOrSlice)
+		k := v.MapKeys()
+		for i := 0; i < v.Len(); i++ {
+			m[k[i].Interface()] = v.MapIndex(k[i]).Interface()
+		}
+	}
+	result := map[interface{}]interface{}{}
+	for k, v := range m {
+		valueResult, keyResult := mapper(v, k)
+		result[keyResult] = valueResult
+	}
+	return result, nil
+}
+
 /*********************************/
 /*           ITERABLE            */
 /*********************************/
@@ -921,6 +985,8 @@ type IterableInterface interface {
 type Iterable struct {
 	array  reflect.Value
 	length int
+	isMap  bool
+	keys   []reflect.Value
 }
 
 // NewIterable returns a new iterable
@@ -937,7 +1003,8 @@ func NewIterable(array interface{}) IterableInterface {
 		return &Iterable{array: reflect.ValueOf(res), length: len(res)}
 	default:
 		arr := reflect.ValueOf(array)
-		return &Iterable{array: arr, length: arr.Len()}
+
+		return &Iterable{array: arr, length: arr.Len(), isMap: arr.Kind() == reflect.Map}
 	}
 
 }
@@ -953,7 +1020,14 @@ func (iterable Iterable) Length() int {
 }
 
 // At is the value at index
-func (iterable Iterable) At(index int) interface{} {
+func (iterable *Iterable) At(index int) interface{} {
+	if iterable.isMap {
+		if iterable.keys == nil {
+			iterable.keys = iterable.array.MapKeys()
+			log.Print(iterable.keys)
+		}
+		return iterable.array.MapIndex(iterable.keys[index]).Interface()
+	}
 	return iterable.array.Index(index).Interface()
 }
 

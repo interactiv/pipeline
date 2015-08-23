@@ -18,6 +18,7 @@ package pipeline_test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/interactiv/expect"
@@ -28,6 +29,15 @@ type Person struct {
 	Age  int
 	Name string
 }
+
+type Product struct {
+	ID         int
+	Name       string
+	CategoryID int
+	Price      int
+}
+
+type Products []Product
 
 func TestIntersection(t *testing.T) {
 	e := expect.New(t)
@@ -138,6 +148,15 @@ func TestFilter(t *testing.T) {
 	}).Out(&result)
 	e.Expect(err).ToBeNil()
 	e.Expect(len(result)).ToBe(2)
+
+	products := Products{{0, "Iphone 6", 0, 500}, {1, "HTC one", 0, 300}, {2, "Apple Watch", 1, 600}, {3, "ThinkPad", 2, 250}}
+	var sample []Product
+	Error := pipeline.In(products).
+		Filter(func(el interface{}, i int) bool { return el.(Product).Price < 499 }).
+		Out(&sample)
+	e.Expect(Error).ToBeNil()
+	e.Expect(len(sample)).ToEqual(2)
+	e.Expect(sample[0].Price).ToEqual(300)
 }
 
 func TestIndexOf(t *testing.T) {
@@ -347,14 +366,14 @@ func TestChunk(t *testing.T) {
 func TestZip(t *testing.T) {
 	e := expect.New(t)
 	var result1 [][]interface{}
-	err := pipeline.In([]int{1, 2, 3}).Zip().Out(&result1)
+	err := pipeline.In([][]int{{1, 2, 3}}).Zip().Out(&result1)
 	e.Expect(err).ToBeNil()
 	e.Expect(fmt.Sprint(result1)).ToEqual(fmt.Sprint([][]interface{}{{1}, {2}, {3}}))
-	err = pipeline.In([]int{1, 2, 3}).Zip([]string{"John", "Jane", "David"}).Out(&result1)
+	err = pipeline.In([][]interface{}{{1, 2, 3}, {"John", "Jane", "David"}}).Zip().Out(&result1)
 	e.Expect(err).ToBeNil()
 	e.Expect(fmt.Sprint(result1)).
 		ToEqual(fmt.Sprint([][]interface{}{{1, "John"}, {2, "Jane"}, {3, "David"}}))
-	err = pipeline.In([]string{"US", "FR"}).Zip([]string{"John", "Jane", "David"}, []bool{true}).Out(&result1)
+	err = pipeline.In([][]interface{}{{"US", "FR"}, {"John", "Jane", "David"}, {true}}).Zip().Out(&result1)
 	e.Expect(fmt.Sprint(result1)).
 		ToEqual(fmt.Sprint([][]interface{}{{"US", "John", true}, {"FR", "Jane", nil}, {nil, "David", nil}}))
 }
@@ -389,3 +408,50 @@ func TestIndexOutOfBoundsError(t *testing.T) {
 	err := pipeline.In([]int{1, 2}).Head(6).Out(&[]int{})
 	e.Expect(err).Not()
 }
+
+func TestIterable(t *testing.T) {
+	const (
+		monday    = "monday"
+		tuesday   = "tuesday"
+		wednesday = "wednesday"
+	)
+	m := map[string]string{monday: "studies", tuesday: "date", wednesday: "training"}
+	e := expect.New(t)
+	e.Expect(m).Not().ToBeNil()
+	e.Expect(pipeline.IsIterable(m)).ToBeTrue()
+	i := pipeline.NewIterable(m)
+	e.Expect(i.Length()).ToEqual(3)
+}
+
+func TestToMap(t *testing.T) {
+	e := expect.New(t)
+	in := map[string]string{"a": "angel", "b": "bookmark", "c": "card"}
+	result := pipeline.In(in).ToMap(func(val interface{}, key interface{}) (interface{}, interface{}) {
+		return key, val
+	}).MustOut()
+	e.Expect(result.(map[interface{}]interface{})["angel"]).ToEqual("a")
+}
+
+func TestCountingWords(t *testing.T) {
+	var result map[string]int
+	err := pipeline.In(strings.Split(words, " ")).Map(func(el interface{}, i int) interface{} {
+		return strings.Trim(strings.Trim(el.(string), "\r\n\t"), ".,!")
+	}).GroupBy(func(el interface{}, i int) interface{} {
+		return el.(string)
+	}).ToMap(func(v interface{}, k interface{}) (interface{}, interface{}) {
+		return len(v.([]interface{})), k
+	}).Out(&result)
+	e := expect.New(t)
+	e.Expect(err).ToBeNil()
+	t.Log(result)
+}
+
+const words = `Lorem ipsum dolor sit amet,
+ consectetuer adipiscing elit. Aenean commodo ligula eget dolor.
+ Aenean massa. Cum sociis natoque penatibus et magnis dis
+ parturient montes, nascetur ridiculus mus.Donec quam felis, ultricies nec, pellentesque eu,pretium quis, sem. Nulla consequat massa quis enim.
+ Donec pede justo, fringilla vel, aliquet nec, vulputate eget,
+ arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. 
+Nullam dictum felis eu pede mollis pretium. Integer tincidunt. 
+Cras dapibus. Vivamus elementum semper nisi. 
+Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu`
