@@ -50,7 +50,7 @@ http://martinfowler.com/articles/collection-pipeline/
 * GroupBy
 * Head
 * IndexOf
-* Intersection²
+* Intersection
 * Last
 * LastIndexOf
 * Map
