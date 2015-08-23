@@ -82,10 +82,7 @@ func (pipeline *Pipeline) Filter(predicate func(element interface{}, index int) 
 
 func (pipeline *Pipeline) Flatten() *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
-		if !IsIterable(pipeline.in) {
-			return nil, NotIterableError{pipeline.in}
-		}
-		return nil, nil
+		return Flatten(pipeline.in)
 	})
 	return pipeline
 }
@@ -398,6 +395,15 @@ func Must(value interface{}, err error) interface{} {
 	}
 }
 
+func IsString(value interface{}) bool {
+	if _, ok := value.(string); ok {
+		return true
+	} else if _, ok2 := value.(*string); ok2 {
+		return true
+	}
+	return false
+}
+
 // IsIterable returns true if value is iterable
 func IsIterable(value interface{}) bool {
 	arrayValue := reflect.ValueOf(value)
@@ -459,6 +465,25 @@ func ReduceRight(array interface{}, callback func(result interface{}, element in
 		return nil, Error
 	}
 	return Reduce(array, callback, initialOrnil)
+}
+
+func Flatten(array interface{}) (interface{}, error) {
+	if !IsIterable(array) {
+		return nil, NotIterableError{array}
+	}
+	iterable := NewIterable(array)
+	result := []interface{}{}
+	for i := 0; i < iterable.Length(); i++ {
+		if !IsString(iterable.At(i)) && IsIterable(iterable.At(i)) {
+			candidate := NewIterable(iterable.At(i))
+			for j := 0; j < candidate.Length(); j++ {
+				result = append(result, candidate.At(j))
+			}
+		} else {
+			result = append(result, iterable.At(i))
+		}
+	}
+	return result, nil
 }
 
 // Filter Iterates over elements of collection, returning a collection of all elements the predicate returns truthy for

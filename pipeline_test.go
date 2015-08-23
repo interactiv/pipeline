@@ -423,6 +423,15 @@ func TestIterable(t *testing.T) {
 	e.Expect(i.Length()).ToEqual(3)
 }
 
+func TestFlatten(t *testing.T) {
+	e := expect.New(t)
+	var result []int
+	Error := pipeline.In([]interface{}{[]int{1, 2}, 3, []int{4, 5}}).Flatten().Out(&result)
+	e.Expect(Error).ToBeNil()
+	e.Expect(len(result)).ToEqual(5)
+	t.Log(result)
+}
+
 func TestToMap(t *testing.T) {
 	e := expect.New(t)
 	in := map[string]string{"a": "angel", "b": "bookmark", "c": "card"}
