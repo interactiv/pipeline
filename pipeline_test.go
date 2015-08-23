@@ -348,17 +348,13 @@ func TestSplice(t *testing.T) {
 	}
 }
 
-func TestSort(t *testing.T) {
-	e := expect.New(t)
+func ExampleSort() {
 	var result []int
 	err := pipeline.In([]int{2, 1, 6, 3, 5, 4}).Sort(func(a interface{}, b interface{}) bool {
 		return a.(int) <= b.(int)
 	}).Out(&result)
-	e.Expect(err).ToBeNil()
-	for i, val := range []int{1, 2, 3, 4, 5, 6} {
-		e.Expect(result[i]).ToEqual(val)
-	}
-
+	fmt.Print(result, " ", err)
+	// Output: [1 2 3 4 5 6] <nil>
 }
 
 func TestUnshift(t *testing.T) {
