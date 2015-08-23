@@ -76,15 +76,11 @@ func TestGroupBy(t *testing.T) {
 	e.Expect(len(result1["drinks"])).ToEqual(1)
 }
 
-func TestXor(t *testing.T) {
-	e := expect.New(t)
+func ExamplePipeline_Xor() {
 	var result []int
 	err := pipeline.In([]int{1, 2}).Xor([]int{2, 3}).Out(&result)
-	e.Expect(err).ToBeNil()
-	e.Expect(fmt.Sprint(result)).ToEqual(fmt.Sprint([]int{1, 3}))
-	err = pipeline.In([]int{1, 2}).Xor([]int{2, 3}, []int{2, 4}).Out(&result)
-	e.Expect(err).ToBeNil()
-	e.Expect(fmt.Sprint(result)).ToEqual(fmt.Sprint([]int{1, 3, 2, 4}))
+	fmt.Print(result, " ", err)
+	// Output: [1 3] <nil>
 }
 
 func TestMap(t *testing.T) {
@@ -320,7 +316,9 @@ func TestUnion(t *testing.T) {
 
 func ExamplePipeline_Splice() {
 	var result []int
-	err := pipeline.In([]int{1, 2, 3, 4, 5}).Splice(1, 2, []interface{}{6, 7, 8}...).Out(&result)
+	err := pipeline.In([]int{1, 2, 3, 4, 5}).
+		Splice(1, 2, []interface{}{6, 7, 8}...).
+		Out(&result)
 
 	fmt.Print(result, " ", err)
 	// Output: [1 6 7 8 4 5] <nil>
@@ -453,26 +451,22 @@ func TestToMap(t *testing.T) {
 	e.Expect(result.(map[interface{}]interface{})["angel"]).ToEqual("a")
 }
 
-func TestCountingWords(t *testing.T) {
+func Example() {
+	// Counting words
+	const words = `Lorem ipsum nascetur,
+    nascetur adipiscing. Aenean commodo nascetur.
+    Aenean nascetur commodo ridiculus nascetur,
+    commodo ,nascetur consequat.`
 	var result map[string]int
 	err := pipeline.In(strings.Split(words, " ")).Map(func(el interface{}, i int) interface{} {
-		return strings.Trim(strings.Trim(el.(string), "\r\n\t"), ".,!")
+		return strings.Trim(strings.Trim(el.(string), " \r\n\t"), ".,!")
 	}).GroupBy(func(el interface{}, i int) interface{} {
 		return el.(string)
 	}).ToMap(func(v interface{}, k interface{}) (interface{}, interface{}) {
-		return len(v.([]interface{})), k
+		return []interface{}{len(v.([]interface{})), k}, k
 	}).Out(&result)
-	e := expect.New(t)
-	e.Expect(err).ToBeNil()
-	t.Log(result)
-}
 
-const words = `Lorem ipsum dolor sit amet,
- consectetuer adipiscing elit. Aenean commodo ligula eget dolor.
- Aenean massa. Cum sociis natoque penatibus et magnis dis
- parturient montes, nascetur ridiculus mus.Donec quam felis, ultricies nec, pellentesque eu,pretium quis, sem. Nulla consequat massa quis enim.
- Donec pede justo, fringilla vel, aliquet nec, vulputate eget,
- arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. 
-Nullam dictum felis eu pede mollis pretium. Integer tincidunt. 
-Cras dapibus. Vivamus elementum semper nisi. 
-Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu`
+	// =>  map[ridiculus:1 ipsum:1 :9 Aenean:2 commodo:3 Lorem:1 nascetur:6 adipiscing:1 consequat:1]
+	fmt.Print(err)
+	// Output: <nil>
+}
