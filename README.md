@@ -1,5 +1,10 @@
 #Pipeline
 
+Pipeline is a functionnal programming library for the Go langague. With Pipeline developpers can use 
+functionnal principles on their collection types such as slices,maps and string. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
+
+http://martinfowler.com/articles/collection-pipeline/
+
 author mparaiso <mparaiso@online.fr>
 
 copyrights 2014
@@ -8,9 +13,15 @@ license GPL-3.0
 
 version 0.1
 
-Martin Fowler pipelines for Go 
 
-http://martinfowler.com/articles/collection-pipeline/
+
+##Installating:
+
+* Install the Go language
+
+* Use 'go get' with a command line interface
+
+    go get github.com/interactiv/pipeline
 
 ##Examples:
 
