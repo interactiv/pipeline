@@ -36,6 +36,27 @@ http://martinfowler.com/articles/collection-pipeline/
     fmt.Print(err)     
 ```
 
+###Calculating the total cost of an customer order
+
+```go
+	// Using Map reduce to compile the total cost of an invoice
+	type Order struct {
+		ProductName string
+		Quantity    int
+		UnitPrice   int
+	}
+	var totalCost int
+	command := []Order{{"Iphone", 2, 500}, {"Graphic card", 1, 250}, {"Flat screen", 3, 600}, {"Ipad air", 5, 200}}
+	err := pipeline.In(command).Map(func(el interface{}, index int) interface{} {
+		return el.(Order).Quantity * el.(Order).UnitPrice
+	}).Reduce(func(result, el interface{}, index int) interface{} {
+		return result.(int) + el.(int)
+	}, 0).Out(&totalCost)
+
+	fmt.Print(err, " ", totalCost)
+	// Output: <nil> 4050
+```
+
 ##Implemented pipelines 
 
 * Chunk
