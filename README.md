@@ -1,7 +1,9 @@
 #Pipeline
 
-Pipeline is a functionnal programming library for the Go langague. With Pipeline developpers can use 
-functionnal principles on their collection types such as slices,maps and string. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
+[![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
+
+Pipeline is a functionnal programming package for the Go language. With Pipeline developpers can use 
+functionnal principles such as map, reduce or filter on their collection types. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
 
 http://martinfowler.com/articles/collection-pipeline/
 
@@ -86,7 +88,6 @@ version 0.1
 * Last
 * LastIndexOf
 * Map
-* Must
 * Push
 * Reduce
 * ReduceRight
