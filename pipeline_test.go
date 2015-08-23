@@ -318,18 +318,15 @@ func TestUnion(t *testing.T) {
 	e.Expect(fmt.Sprint(res)).ToEqual(fmt.Sprint([]int{1, 2, 3, 4}))
 }
 
-func TestSplice(t *testing.T) {
-	e := expect.New(t)
+func ExamplePipeline_Splice() {
 	var result []int
 	err := pipeline.In([]int{1, 2, 3, 4, 5}).Splice(1, 2, []interface{}{6, 7, 8}...).Out(&result)
-	e.Expect(err).ToBeNil()
-	e.Expect(len(result)).ToEqual(6)
-	for i, val := range []int{1, 6, 7, 8, 4, 5} {
-		e.Expect(result[i]).ToEqual(val)
-	}
+
+	fmt.Print(result, " ", err)
+	// Output: [1 6 7 8 4 5] <nil>
 }
 
-func ExampleMapReduce() {
+func ExamplePipeline_Reduce() {
 	// Using Map reduce to compile the total cost of an invoice
 	type Order struct {
 		ProductName string
@@ -348,7 +345,7 @@ func ExampleMapReduce() {
 	// Output: <nil> 4050
 }
 
-func ExampleSort() {
+func ExamplePipeline_Sort() {
 	var result []int
 	err := pipeline.In([]int{2, 1, 6, 3, 5, 4}).Sort(func(a interface{}, b interface{}) bool {
 		return a.(int) <= b.(int)
