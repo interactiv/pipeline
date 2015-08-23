@@ -36,3 +36,39 @@ http://martinfowler.com/articles/collection-pipeline/
     fmt.Print(err)     
 ```
 
+##Implemented pipelines 
+
+* Chunk
+* Compact
+* Concat
+* Difference
+* Equals
+* Every
+* Filter
+* First
+* Flatten
+* GroupBy
+* Head
+* IndexOf
+* Intersection²
+* Last
+* LastIndexOf
+* Map
+* Must
+* Push
+* Reduce
+* ReduceRight
+* Reverse
+* Slice
+* Some
+* Sort
+* Splice
+* Tail
+* ToMap
+* Union
+* Unique
+* Unshift
+* Without
+* Xor
+* Zip
+
