@@ -80,6 +80,7 @@ func (pipeline *Pipeline) Filter(predicate func(element interface{}, index int) 
 	return pipeline
 }
 
+// Flattens a nested array.
 func (pipeline *Pipeline) Flatten() *Pipeline {
 	pipeline.commands = append(pipeline.commands, func() (interface{}, error) {
 		return Flatten(pipeline.in)
@@ -467,6 +468,7 @@ func ReduceRight(array interface{}, callback func(result interface{}, element in
 	return Reduce(array, callback, initialOrnil)
 }
 
+// Flattens a nested array.
 func Flatten(array interface{}) (interface{}, error) {
 	if !IsIterable(array) {
 		return nil, NotIterableError{array}
