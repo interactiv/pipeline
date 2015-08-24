@@ -94,6 +94,15 @@ http://martinfowler.com/articles/collection-pipeline/
 	// Output: [1 2 3 4 5 6] <nil>
 ```
 
+### Symmetric difference
+
+```go
+	var result []int
+	err := pipeline.In([]int{1, 2}).Xor([]int{2, 3}).Out(&result)
+	fmt.Print(result, " ", err)
+	// Output: [1 3] <nil>
+```
+
 ## Implemented pipelines 
 
 - Chunk
