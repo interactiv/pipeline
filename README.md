@@ -25,7 +25,9 @@ http://martinfowler.com/articles/collection-pipeline/
     nascetur adipiscing. Aenean commodo nascetur.
     Aenean nascetur commodo ridiculus nascetur,
     commodo ,nascetur consequat.`
+	
     var result map[string]int
+	
     err := pipeline.In(strings.Split(words, " ")).Map(
 		func(el interface{}, i int) interface{} {
         	return strings.Trim(strings.Trim(el.(string), " \r\n\t"), ".,!")
