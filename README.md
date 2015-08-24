@@ -60,7 +60,9 @@ http://martinfowler.com/articles/collection-pipeline/
 		Quantity    int
 		UnitPrice   int
 	}
+	
 	var totalCost int
+	
 	command := []Order{{"Iphone", 2, 500}, 
 		{"Graphic card", 1, 250}, {"Flat screen", 3, 600}, 
 		{"Ipad air", 5, 200}}
@@ -80,9 +82,12 @@ http://martinfowler.com/articles/collection-pipeline/
 
 ```go
     var result []int
-	err := pipeline.In([]int{2, 1, 6, 3, 5, 4}).Sort(func(a interface{}, b interface{}) bool {
-		return a.(int) <= b.(int)
-	}).Out(&result)
+	
+	err := pipeline.In([]int{2, 1, 6, 3, 5, 4}).Sort(
+		func(a interface{}, b interface{}) bool {
+			return a.(int) <= b.(int)
+		}).Out(&result)
+		
 	fmt.Print(result, " ", err)
 	// Output: [1 2 3 4 5 6] <nil>
 ```
