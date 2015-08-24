@@ -463,7 +463,7 @@ func Example() {
 	}).GroupBy(func(el interface{}, i int) interface{} {
 		return el.(string)
 	}).ToMap(func(v interface{}, k interface{}) (interface{}, interface{}) {
-		return []interface{}{len(v.([]interface{})), k}, k
+		return len(v.([]interface{})), k
 	}).Out(&result)
 
 	// =>  map[ridiculus:1 ipsum:1 :9 Aenean:2 commodo:3 Lorem:1 nascetur:6 adipiscing:1 consequat:1]

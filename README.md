@@ -1,4 +1,4 @@
-#Pipeline
+# Pipeline
 
 [![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
 
@@ -18,17 +18,17 @@ http://martinfowler.com/articles/collection-pipeline/
 
 
 
-##Installating:
+## Installating:
 
-* Install the Go language
+- Install the Go language
 
-* Use 'go get' with a command line interface
+- Use 'go get' with a command line interface
 
     go get github.com/interactiv/pipeline
 
-##Examples:
+## Examples:
 
-###Counting words
+### Counting words
 
 ```go
     // Counting words
@@ -43,7 +43,7 @@ http://martinfowler.com/articles/collection-pipeline/
     	}).GroupBy(func(el interface{}, i int) interface{} {
     		return el.(string)
     	}).ToMap(func(v interface{}, k interface{}) (interface{}, interface{}) {
-    		return []interface{}{len(v.([]interface{})), k}, k
+    		return len(v.([]interface{})), k
     	}).Out(&result)
     
     // =>  map[ridiculus:1 ipsum:1 :9 Aenean:2 commodo:3 Lorem:1 
@@ -51,7 +51,7 @@ http://martinfowler.com/articles/collection-pipeline/
     fmt.Print(err)     
 ```
 
-###Calculating the total cost of a customer order
+### Calculating the total cost of a customer order
 
 ```go
 	// Using Map reduce to compile the total cost of an invoice
@@ -76,38 +76,49 @@ http://martinfowler.com/articles/collection-pipeline/
 	// Output: <nil> 4050
 ```
 
-##Implemented pipelines 
+### Sorting numbers
 
-* Chunk
-* Compact
-* Concat
-* Difference
-* Equals
-* Every
-* Filter
-* First
-* Flatten
-* GroupBy
-* Head
-* IndexOf
-* Intersection
-* Last
-* LastIndexOf
-* Map
-* Push
-* Reduce
-* ReduceRight
-* Reverse
-* Slice
-* Some
-* Sort
-* Splice
-* Tail
-* ToMap
-* Union
-* Unique
-* Unshift
-* Without
-* Xor
-* Zip
+```go
+    var result []int
+	err := pipeline.In([]int{2, 1, 6, 3, 5, 4}).Sort(func(a interface{}, b interface{}) bool {
+		return a.(int) <= b.(int)
+	}).Out(&result)
+	fmt.Print(result, " ", err)
+	// Output: [1 2 3 4 5 6] <nil>
+```
+
+## Implemented pipelines 
+
+- Chunk
+- Compact
+- Concat
+- Difference
+- Equals
+- Every
+- Filter
+- First
+- Flatten
+- GroupBy
+- Head
+- IndexOf
+- Intersection
+- Last
+- LastIndexOf
+- Map
+- Push
+- Reduce
+- ReduceRight
+- Reverse
+- Slice
+- Some
+- Sort
+- Splice
+- Tail
+- ToMap
+- Union
+- Unique
+- Unshift
+- Without
+- Xor
+- Zip
 

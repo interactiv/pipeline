@@ -14,7 +14,7 @@
 //    You should have received a copy of the GNU General Public License
 //    along with pipeline program.  If not, see <http://www.gnu.org/licenses/>.
 
-//#Pipeline
+//# Pipeline
 //
 //Pipeline is a functionnal programming package for the Go language. With Pipeline developpers can use
 //functionnal principles such as map, reduce or filter on their collection types. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
@@ -29,17 +29,17 @@
 //
 //version 0.1
 //
-//##Installating:
+//## Installating:
 //
-//* Install the Go language
+//- Install the Go language
 //
-//* Use 'go get' with a command line interface
+//- Use 'go get' with a command line interface
 //
 //    go get github.com/interactiv/pipeline
 //
-//##Examples:
+//## Examples:
 //
-//###Counting words
+//### Counting words
 //
 //```go
 //    // Counting words
@@ -61,7 +61,7 @@
 //    fmt.Print(err)
 //```
 //
-//###Calculating the total cost of an customer order
+//### Calculating the total cost of an customer order
 //
 //```go
 //	// Using Map reduce to compile the total cost of an invoice
@@ -82,38 +82,38 @@
 //	// Output: <nil> 4050
 //```
 //
-//##Implemented pipelines
+//## Implemented pipelines
 //
-//* Chunk
-//* Compact
-//* Concat
-//* Difference
-//* Equals
-//* Every
-//* Filter
-//* First
-//* Flatten
-//* GroupBy
-//* Head
-//* IndexOf
-//* Intersection
-//* Last
-//* LastIndexOf
-//* Map
-//* Push
-//* Reduce
-//* ReduceRight
-//* Reverse
-//* Slice
-//* Some
-//* Sort
-//* Splice
-//* Tail
-//* ToMap
-//* Union
-//* Unique
-//* Unshift
-//* Without
-//* Xor
-//* Zip
+//- Chunk
+//- Compact
+//- Concat
+//- Difference
+//- Equals
+//- Every
+//- Filter
+//- First
+//- Flatten
+//- GroupBy
+//- Head
+//- IndexOf
+//- Intersection
+//- Last
+//- LastIndexOf
+//- Map
+//- Push
+//- Reduce
+//- ReduceRight
+//- Reverse
+//- Slice
+//- Some
+//- Sort
+//- Splice
+//- Tail
+//- ToMap
+//- Union
+//- Unique
+//- Unshift
+//- Without
+//- Xor
+//- Zip
 package pipeline
