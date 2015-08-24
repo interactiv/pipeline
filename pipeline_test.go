@@ -451,7 +451,7 @@ func TestToMap(t *testing.T) {
 	e.Expect(result.(map[interface{}]interface{})["angel"]).ToEqual("a")
 }
 
-func Example() {
+func ExamplePipeline_GroupBy() {
 	// Counting words
 	const words = `Lorem ipsum nascetur,
     nascetur adipiscing. Aenean commodo nascetur.
