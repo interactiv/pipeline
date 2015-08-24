@@ -1,32 +1,17 @@
 # Pipeline
 
-[![Build Status](https://travis-ci.org/interactiv/pipeline.svg?branch=master)](https://travis-ci.org/interactiv/pipeline)
+[![Build Status](https://travis-ci.org/interactiv/pipeline.svg?branch=master)](https://travis-ci.org/interactiv/pipeline) [![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline) [![Coverage](http://gocover.io/_badge/github.com/interactiv/pipeline?0)](http://gocover.io/github.com/interactiv/pipeline)
 
-[![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
-
-[![Coverage](http://gocover.io/_badge/github.com/interactiv/pipeline?0)](http://gocover.io/github.com/interactiv/pipeline)
-
-author mparaiso <mparaiso@online.fr>
-
-copyrights 2014
-
-license GPL-3.0
+written by mparaiso <mparaiso@online.fr> , copyrights 2014 ,license GPL-3.0
 
 version 0.1
 
 Pipeline is a functionnal programming package for the Go language. With Pipeline developpers can use 
-functionnal principles such as map, reduce or filter on their collection types. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
+functionnal principles such as map, reduce or filter. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
 
 http://martinfowler.com/articles/collection-pipeline/
 
-
-
-
 ## Installating:
-
-- Install the Go language
-
-- Use 'go get' with a command line interface
 
     go get github.com/interactiv/pipeline
 
