@@ -2,6 +2,8 @@
 
 [![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
 
+[![Coverage](http://gocover.io/_badge/github.com/interactiv/pipeline?0)](http://gocover.io/github.com/interactiv/pipeline)
+
 author mparaiso <mparaiso@online.fr>
 
 copyrights 2014
