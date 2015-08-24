@@ -1,5 +1,7 @@
 # Pipeline
 
+[![Build Status](https://travis-ci.org/interactiv/pipeline.svg?branch=master)](https://travis-ci.org/interactiv/pipeline)
+
 [![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
 
 [![Coverage](http://gocover.io/_badge/github.com/interactiv/pipeline?0)](http://gocover.io/github.com/interactiv/pipeline)
