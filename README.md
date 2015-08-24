@@ -2,11 +2,6 @@
 
 [![Pipeline](https://godoc.org/github.com/interactiv/pipeline?status.svg)](http://godoc.org/github.com/interactiv/pipeline)
 
-Pipeline is a functionnal programming package for the Go language. With Pipeline developpers can use 
-functionnal principles such as map, reduce or filter on their collection types. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
-
-http://martinfowler.com/articles/collection-pipeline/
-
 author mparaiso <mparaiso@online.fr>
 
 copyrights 2014
@@ -14,6 +9,12 @@ copyrights 2014
 license GPL-3.0
 
 version 0.1
+
+Pipeline is a functionnal programming package for the Go language. With Pipeline developpers can use 
+functionnal principles such as map, reduce or filter on their collection types. Pipeline is written in go and inspired by underscore.js , lodash.js and Martin Fowler's pipelines :
+
+http://martinfowler.com/articles/collection-pipeline/
+
 
 
 
@@ -45,11 +46,12 @@ version 0.1
     		return []interface{}{len(v.([]interface{})), k}, k
     	}).Out(&result)
     
-    // =>  map[ridiculus:1 ipsum:1 :9 Aenean:2 commodo:3 Lorem:1 nascetur:6 adipiscing:1 consequat:1]
+    // =>  map[ridiculus:1 ipsum:1 :9 Aenean:2 commodo:3 Lorem:1 
+	// nascetur:6 adipiscing:1 consequat:1]
     fmt.Print(err)     
 ```
 
-###Calculating the total cost of an customer order
+###Calculating the total cost of a customer order
 
 ```go
 	// Using Map reduce to compile the total cost of an invoice
@@ -59,12 +61,16 @@ version 0.1
 		UnitPrice   int
 	}
 	var totalCost int
-	command := []Order{{"Iphone", 2, 500}, {"Graphic card", 1, 250}, {"Flat screen", 3, 600}, {"Ipad air", 5, 200}}
-	err := pipeline.In(command).Map(func(el interface{}, index int) interface{} {
-		return el.(Order).Quantity * el.(Order).UnitPrice
-	}).Reduce(func(result, el interface{}, index int) interface{} {
-		return result.(int) + el.(int)
-	}, 0).Out(&totalCost)
+	command := []Order{{"Iphone", 2, 500}, 
+		{"Graphic card", 1, 250}, {"Flat screen", 3, 600}, 
+		{"Ipad air", 5, 200}}
+		
+	err := pipeline.In(command).Map(
+		func(el interface{}, index int) interface{} {
+			return el.(Order).Quantity * el.(Order).UnitPrice
+		}).Reduce(func(result, el interface{}, index int) interface{} {
+			return result.(int) + el.(int)
+		}, 0).Out(&totalCost)
 
 	fmt.Print(err, " ", totalCost)
 	// Output: <nil> 4050
